@@ -1,5 +1,6 @@
 require "lita-meet"
 require "lita/rspec"
+require 'timecop'
 
 # A compatibility mode is provided for older plugins upgrading from Lita 3. Since this plugin
 # was generated with Lita 4, the compatibility mode should be left disabled.
