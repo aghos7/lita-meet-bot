@@ -73,19 +73,17 @@ module Lita
       def store_response(response)
         #TODO: add check for the last person to response, trigger a play in the room
         return unless can_respond?
+        redis.set(response_key(response.user.name), response.matches.first)
         response.reply('Response recorded. Thanks for partipating')
-        date_string = Time.now.strftime('%Y%m%d')
-        user_name = response.user.name.split(' ').join('_') #lol
-        redis.set(date_string + '-' + user_name, response.matches.first)
       end
 
       def update_room(response)
         room = Source.new(room: response.room)
         message_body = ''
-        response_prefix = Date.parse(started_at).strftime('%Y%m%d')
+        response_prefix = started_at.strftime('%Y%m%d')
         redis.keys.each do |key|
           if key.to_s.include? response_prefix
-            message_body += key.gsub(Date.parse(started_at).strftime('%Y%m%d') + '-', "")
+            message_body += key.gsub(response_prefix + '-', "")
             message_body += "\n"
             message_body += MultiJson.load(redis.get(key)).join("\n")
             message_body += "\n"
@@ -129,16 +127,23 @@ module Lita
 
       def check_completion
         result = { complete: [], incomplete: [] }
-        check_prefix = Date.parse(started_at).strftime('%Y%m%d')
-        @users.each do | user |
-          check = redis.get(check_prefix + "-" + user)
-          if check.present?
+        @users.each do |user|
+          response = redis.get(response_key(user.name))
+          if response.present?
             result[:complete] << user
           else
             result[:incomplete] << user
           end
         end
-        return result
+        result
+      end
+
+      def response_key(username, timestamp=started_at)
+        return timestamp.strftime('%Y%m%d') + "-" + cleanup_username(username)
+      end
+
+      def cleanup_username(username)
+        username.gsub(' ', '_')
       end
 
       def send_nag(user)
