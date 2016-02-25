@@ -25,7 +25,7 @@ describe Lita::Handlers::Meet, lita_handler: true do
       expect(replies.size).to eq(6) #larry, moe, and curly
     end
 
-    describe 'nagging for responses', focus: true do
+    describe 'nagging for responses' do
       before do
         registry.config.handlers.meet.nag_frequency = 1 # seconds
         send_command("start standup", as: @larry)
@@ -38,7 +38,7 @@ describe Lita::Handlers::Meet, lita_handler: true do
 
   describe '#process_standup' do
     it "accepts responses" do
-      send_command("start standup now", as: @larry)
+      send_command("start standup", as: @larry)
       send_command("standup response 1: linguistics 2: more homework 3: being in seattle", as: @moe)
       send_command("standup response 1: stitchfix 2: more stitchfix 3: gaining weight", as: @curly)
       send_command("standup response 1: lita 2: Rust else 3: nothing", as: @larry)
